@@ -1,0 +1,34 @@
+import { Timing } from "pip-services3-components-node";
+import { ConfigParams } from 'pip-services3-commons-node';
+import { IConfigurable } from 'pip-services3-commons-node';
+import { IReferences } from 'pip-services3-commons-node';
+import { IReferenceable } from 'pip-services3-commons-node';
+import { FilterParams } from 'pip-services3-commons-node';
+import { PagingParams } from 'pip-services3-commons-node';
+import { DataPage } from 'pip-services3-commons-node';
+import { ICommandable } from 'pip-services3-commons-node';
+import { CommandSet } from 'pip-services3-commons-node';
+import { RetryV1 } from '../data/version1';
+import { IRetriesController } from './IRetriesController';
+export declare class RetriesController implements IConfigurable, IReferenceable, ICommandable, IRetriesController {
+    private static _defaultConfig;
+    readonly component: string;
+    private _logger;
+    private _counters;
+    private _dependencyResolver;
+    private _persistence;
+    private _commandSet;
+    configure(config: ConfigParams): void;
+    setReferences(references: IReferences): void;
+    getCommandSet(): CommandSet;
+    protected instrument(correlationId: string, methodName: string): Timing;
+    getCollectionNames(correlationId: string, callback: (err: any, items: string[]) => void): void;
+    private createRetries;
+    addRetries(correlationId: string, collection: string, ids: string[], timeToLive: number, callback: (err: any, retry: RetryV1[]) => void): RetryV1[];
+    addRetry(correlationId: string, collection: string, id: string, timeToLive: number, callback: (err: any, retry: RetryV1) => void): RetryV1;
+    getRetries(correlationId: string, filter: FilterParams, paging: PagingParams, callback: (err: any, page: DataPage<RetryV1>) => void): void;
+    getRetryById(correlationId: string, collection: string, id: string, callback: (err: any, retry: RetryV1) => void): void;
+    getRetryByIds(correlationId: string, collection: string, ids: string[], callback: (err: any, retry: RetryV1[]) => void): void;
+    deleteRetry(correlationId: string, collection: string, id: string, callback: (err: any) => void): void;
+    deleteExpiredRetries(correlationId: string, callback: (err: any) => void): void;
+}

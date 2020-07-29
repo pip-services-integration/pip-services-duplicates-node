@@ -1,6 +1,6 @@
 {
-    "name": "pip-services-duplicates-node",
+    "name": "pip-services-retries-node",
     "version": "1.0.0",
     "registry": "pipdevs",
-    "build": 15
+    "build": 1
 }

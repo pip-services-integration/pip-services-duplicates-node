@@ -1,8 +1,8 @@
 {
-    "name": "pip-services-duplicates-node",
+    "name": "pip-services-retries-node",
     "version": "1.0.0",
     "author": "Conceptual Vision Consulting LLC",
-    "description": "Duplicates microservice in Node.js",
+    "description": "Retries microservice in Node.js",
     "contributors": [
         {
             "name": "Sergey Seroukhov",
@@ -13,13 +13,13 @@
     "typings": "./obj/src/index.d.ts",
     "keywords": [
         "pip.services",
-        "duplicate",
+        "retry",
         "microservice"
     ],
     "noAnalyze": true,
     "repository": {
         "type": "git",
-        "url": "ssh://git@github.com:pip-services-integration/pip-services-duplicates-node.git"
+        "url": "ssh://git@github.com:pip-services-integration/pip-services-retries-node.git"
     },
     "license": "MIT",
     "engines": {

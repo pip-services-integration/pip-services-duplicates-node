@@ -1,7 +1,7 @@
-let DuplicatesProcess = require('../obj/src/container/DuplicatesProcess').DuplicatesProcess;
+let RetriesProcess = require('../obj/src/container/RetriesProcess').RetriesProcess;
 
 try {
-    new DuplicatesProcess().run(process.argv);
+    new RetriesProcess().run(process.argv);
 } catch (ex) {
     console.error(ex);
 }

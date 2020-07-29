@@ -22,7 +22,7 @@ try {
     # Test using curl
     Start-Sleep -Seconds 10
     Invoke-WebRequest -Uri http://localhost:8080/heartbeat
-    #Invoke-WebRequest -Uri http://localhost:8080/v1/duplicates/get_duplicates
+    #Invoke-WebRequest -Uri http://localhost:8080/v1/retries/get_retries
 
     Write-Host "The container was successfully built."
 } finally {

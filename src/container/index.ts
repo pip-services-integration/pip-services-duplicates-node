@@ -1,2 +1,1 @@
-// export { DuplicatesProcess } from './DuplicatesProcess';
-// export { DuplicatesLambdaFunction } from './DuplicatesLambdaFunction';
+export { RetriesProcess } from './RetriesProcess';

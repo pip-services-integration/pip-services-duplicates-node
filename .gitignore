@@ -1,7 +1,9 @@
 /node_modules
 /npm-debug.log
 /.idea
-/data/duplicates.test.json
-/data/duplicates.json
+/data/retries.test.json
+/data/retries.json
 /obj/test
 /docker/id_rsa*
+/.vscode
+/package-lock.json

@@ -1,8 +1,8 @@
 ---
 # Container descriptor
 - descriptor: "pip-services:context-info:default:default:1.0"
-  name: "pip-services-duplicates"
-  description: "Duplicates microservice for pip-services"
+  name: "pip-services-retries"
+  description: "Retries microservice for pip-services"
 
 # Console logger
 - descriptor: "pip-services:logger:console:default:1.0"
@@ -14,19 +14,19 @@
 
 {{#if MEMORY_ENABLED}}
 # In-memory persistence. Use only for testing!
-- descriptor: "pip-services-duplicates:persistence:memory:default:1.0"
+- descriptor: "pip-services-retries:persistence:memory:default:1.0"
 {{/if}}
 
 {{#if FILE_ENABLED}}
 # File persistence. Use it for testing of for simple standalone deployments
-- descriptor: "pip-services-duplicates:persistence:file:default:1.0"
-  path: {{FILE_PATH}}{{#unless FILE_PATH}}"../data/duplicates.json"{{/unless}}
+- descriptor: "pip-services-retries:persistence:file:default:1.0"
+  path: {{FILE_PATH}}{{#unless FILE_PATH}}"../data/retries.json"{{/unless}}
 {{/if}}
 
 {{#if MONGO_ENABLED}}
 # MongoDB Persistence
-- descriptor: "pip-services-duplicates:persistence:mongodb:default:1.0"
-  collection: {{MONGO_COLLECTION}}{{#unless MONGO_COLLECTION}}duplicates{{/unless}}
+- descriptor: "pip-services-retries:persistence:mongodb:default:1.0"
+  collection: {{MONGO_COLLECTION}}{{#unless MONGO_COLLECTION}}retries{{/unless}}
   connection:
     uri: {{{MONGO_SERVICE_URI}}}
     host: {{{MONGO_SERVICE_HOST}}}{{#unless MONGO_SERVICE_HOST}}localhost{{/unless}}
@@ -37,21 +37,18 @@
     password: {{MONGO_PASS}}
 {{/if}}
 
-{{#if PAYPAL_ENABLED}}
-# PayPal persistence
-- descriptor: "pip-services-duplicates:persistence:paypal:default:*"
-  credential:
-    access_id: "{{PAYPAL_ACCESS_ID}}"
-    access_key: "{{PAYPAL_ACCESS_KEY}}"
-{{/if}}
-
 {{#unless MEMORY_ENABLED}}{{#unless FILE_ENABLED}}{{#unless MONGO_ENABLED}}{{#unless PAYPAL_ENABLED}}
 # Default in-memory persistence
-- descriptor: "pip-services-duplicates:persistence:memory:default:1.0"
+- descriptor: "pip-services-retries:persistence:memory:default:1.0"
 {{/unless}}{{/unless}}{{/unless}}{{/unless}}
 
 # Default controller
-- descriptor: "pip-services-duplicates:controller:default:default:1.0"
+- descriptor: "pip-services-retries:controller:default:default:1.0"
+
+# Default processor
+- descriptor: "pip-services-retries:processor:default:default:1.0"
+  options:
+    interval: {{RETRY_PROCESSOR_INTERVAL}}{{^RETRY_PROCESSOR_INTERVAL}}300000{{/RETRY_PROCESSOR_INTERVAL}}
 
 # Common HTTP endpoint
 - descriptor: "pip-services:endpoint:http:default:1.0"
@@ -61,7 +58,7 @@
     port: 8080
 
 # HTTP endpoint version 1.0
-- descriptor: "pip-services-duplicates:service:http:default:1.0"
+- descriptor: "pip-services-retries:service:http:default:1.0"
 
 # Heartbeat service
 - descriptor: "pip-services:heartbeat-service:http:default:1.0"

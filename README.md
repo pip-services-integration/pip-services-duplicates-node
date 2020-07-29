@@ -1,7 +1,7 @@
-# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Duplicates microservice
+# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Retries microservice
 
-This is Duplicates microservice from Pip.Services library. 
-It stores customer Duplicates internally or in external PCI-complient service like Paypal
+This is Retries microservice from Pip.Services library. 
+It stores Retries 
 
 The microservice currently supports the following deployment options:
 * Deployment platforms: Standalone Process, Seneca
@@ -17,11 +17,9 @@ This microservice has no dependencies on other microservices.
 * [Configuration Guide](doc/Configuration.md)
 * [Deployment Guide](doc/Deployment.md)
 * Client SDKs
-  - [Node.js SDK](https://github.com/pip-services/pip-clients-duplicates-node)
+  - [Node.js SDK](https://github.com/pip-services/pip-clients-retries-node)
 * Communication Protocols
   - [HTTP Version 1](doc/HttpProtocolV1.md)
-  - [Seneca Version 1](doc/SenecaProtocolV1.md)
-  - [Lambda Version 1](doc/LambdaProtocolV1.md)
 
 ## Contract
 
@@ -29,65 +27,36 @@ Logical contract of the microservice is presented below. For physical implementa
 please, refer to documentation of the specific protocol.
 
 ```typescript
-class RatingV1 {
-    public line1: string;
-    public line2?: string;
-    public city: string;
-    public postal_code?: string;
-    public postal_code?: string;
-    public country_code: string; // ISO 3166-1
-}
-
-class DuplicateV1 implements IStringIdentifiable {
+class RetryV1 {
     public id: string;
-    public customer_id: string;
-
-    public create_time?: Date;
-    public update_time?: Date;
-    
-    public type?: string;
-    public number?: string;
-    public expire_month?: number;
-    public expire_year?: number;
-    public first_name?: string;
-    public last_name?: string;
-    public billing_address?: RatingV1;
-    public state?: string;
-    public ccv?: string;
-
-    public name?: string;
-    public saved?: boolean;
-    public default?: boolean;
+    public collection: string;
+    public attempt_count: number;
+    public last_attempt_time: Date;
+    public expiration_time: Date;
 }
 
-class DuplicateTypeV1 {
-    public static readonly Visa = "visa";
-    public static readonly Masterduplicate = "masterduplicate";
-    public static readonly AmericanExpress = "amex";
-    public static readonly Discover = "discover";
-    public static readonly Maestro = "maestro";
-}
+interface IRetriesController {
+    getCollectionNames(correlationId: string, callback: (err: any, items: Array<string>) => void);
 
-class DuplicateStateV1 {
-    public static Ok: string = "ok";
-    public static Expired: string = "expired";
-}
+    getRetries(correlationId: string, filter: FilterParams, paging: PagingParams,
+        callback: (err: any, page: DataPage<RetryV1>) => void): void;
 
-interface IDuplicatesV1 {
-    getDuplicates(correlationId: string, filter: FilterParams, paging: PagingParams, 
-        callback: (err: any, page: DataPage<DuplicateV1>) => void): void;
+    addRetry(correlationId: string, collection: string, id: string, timeToLive: number, 
+        callback: (err: any, retry: RetryV1) => void);
 
-    getDuplicateById(correlationId: string, duplicate_id: string, 
-        callback: (err: any, duplicate: DuplicateV1) => void): void;
+    addRetries(correlationId: string, collection: string, ids: string[], timeToLive: number, 
+        callback: (err: any, retry: RetryV1[]) => void);
 
-    createDuplicate(correlationId: string, duplicate: DuplicateV1, 
-        callback: (err: any, duplicate: DuplicateV1) => void): void;
+    getRetryById(correlationId: string, collection: string, id: string, 
+        callback: (err: any, retry: RetryV1) => void): void;
 
-    updateDuplicate(correlationId: string, duplicate: DuplicateV1, 
-        callback: (err: any, duplicate: DuplicateV1) => void): void;
+    getRetryByIds(correlationId: string, collection: string, ids: string[], 
+        callback: (err: any, retry: RetryV1[]) => void): void;
 
-    deleteDuplicateById(correlationId: string, duplicate_id: string,
-        callback: (err: any, duplicate: DuplicateV1) => void): void;
+    deleteRetry(correlationId: string, collection: string, id: string, 
+        callback: (err: any) => void): void;
+
+    deleteExpiredRetries(correlationId: string, callback: (err: any) => void);
 }
 ```
 
@@ -95,7 +64,7 @@ interface IDuplicatesV1 {
 
 Right now the only way to get the microservice is to check it out directly from github repository
 ```bash
-git clone git@github.com:pip-services-integration/pip-services-duplicates-node.git
+git clone git@github.com:pip-services-integration/pip-services-retries-node.git
 ```
 
 Pip.Service team is working to implement packaging and make stable releases available for your 
@@ -109,18 +78,18 @@ As the starting point you can use example configuration from **config.example.ym
 Example of microservice configuration
 ```yaml
 - descriptor: "pip-services-container:container-info:default:default:1.0"
-  name: "pip-services-duplicates"
-  description: "Duplicates microservice"
+  name: "pip-services-retries"
+  description: "Retries microservice"
 
 - descriptor: "pip-services-commons:logger:console:default:1.0"
   level: "trace"
 
-- descriptor: "pip-services-duplicates:persistence:file:default:1.0"
-  path: "./data/duplicates.json"
+- descriptor: "pip-services-retries:persistence:file:default:1.0"
+  path: "./data/retries.json"
 
-- descriptor: "pip-services-duplicates:controller:default:default:1.0"
+- descriptor: "pip-services-retries:controller:default:default:1.0"
 
-- descriptor: "pip-services-duplicates:service:http:default:1.0"
+- descriptor: "pip-services-retries:service:http:default:1.0"
   connection:
     protocol: "http"
     host: "0.0.0.0"
@@ -145,7 +114,7 @@ If you use Node.js then you should add dependency to the client SDK into **packa
     ...
     "dependencies": {
         ....
-        "pip-clients-duplicates-node": "^1.1.*",
+        "pip-clients-retries-node": "^1.0.*",
         ...
     }
 }
@@ -153,7 +122,7 @@ If you use Node.js then you should add dependency to the client SDK into **packa
 
 Inside your code get the reference to the client SDK
 ```javascript
-var sdk = new require('pip-clients-duplicates-node');
+var sdk = new require('pip-clients-retries-node');
 ```
 
 Define client configuration parameters that match configuration of the microservice external API
@@ -171,7 +140,7 @@ var config = {
 Instantiate the client and open connection to the microservice
 ```javascript
 // Create the client instance
-var client = sdk.DuplicatesHttpClientV1(config);
+var client = sdk.RetriesHttpClientV1(config);
 
 // Connect to the microservice
 client.open(null, function(err) {
@@ -188,44 +157,31 @@ client.open(null, function(err) {
 
 Now the client is ready to perform operations
 ```javascript
-// Create a new duplicate
-var duplicate = {
-    customer_id: '1',
-    type: 'visa',
-    number: '1111111111111111',
-    expire_month: 1,
-    expire_year: 2021,
-    first_name: 'Bill',
-    last_name: 'Gates',
-    billing_address: {
-        line1: '2345 Swan Rd',
-        city: 'Tucson',
-        postal_code: '85710',
-        country_code: 'US'
-    },
-    ccv: '213',
-    name: 'Test Duplicate 1',
-    saved: true,
-    default: true,
-    state: 'ok'
+// Create a new retry
+var retry = {{
+    id: '1',
+    collection: "c1",
+    attempt_count: 1,
+    last_attempt_time: new Date(),
+    expiration_time: new Date()        
 };
 
-client.createDuplicate(
+client.createRetry(
     null,
-    duplicate,
-    function (err, duplicate) {
+    retry,
+    function (err, retry) {
         ...
     }
 );
 ```
 
 ```javascript
-// Get the list of duplicates on 'time management' topic
-client.getDuplicates(
+// Get the list of retries on 'time management' topic
+client.getRetries(
     null,
     {
-        customer_id: '1',
-        state: 'ok'
+        id: '1',
+        collection: "c1",
     },
     {
         total: true,
@@ -240,4 +196,8 @@ client.getDuplicates(
 
 ## Acknowledgements
 
-This microservice was created and currently maintained by *Sergey Seroukhov*.
+This microservice was created and currently maintained by 
+- *Sergey Seroukhov* 
+- *Sergey Khoroshikh*
+- *Levichev Dmitry*
+

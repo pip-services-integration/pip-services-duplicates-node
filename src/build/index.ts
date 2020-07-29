@@ -1,1 +1,1 @@
-// export { DuplicatesServiceFactory } from './DuplicatesServiceFactory';
+export { RetriesServiceFactory } from './RetriesServiceFactory';
