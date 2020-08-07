@@ -29,31 +29,31 @@ please, refer to documentation of the specific protocol.
 ```typescript
 class RetryV1 {
     public id: string;
-    public collection: string;
+    public group: string;
     public attempt_count: number;
     public last_attempt_time: Date;
     public expiration_time: Date;
 }
 
 interface IRetriesController {
-    getCollectionNames(correlationId: string, callback: (err: any, items: Array<string>) => void);
+    getGroupNames(correlationId: string, callback: (err: any, items: Array<string>) => void);
 
     getRetries(correlationId: string, filter: FilterParams, paging: PagingParams,
         callback: (err: any, page: DataPage<RetryV1>) => void): void;
 
-    addRetry(correlationId: string, collection: string, id: string, timeToLive: number, 
+    addRetry(correlationId: string, group: string, id: string, timeToLive: number, 
         callback: (err: any, retry: RetryV1) => void);
 
-    addRetries(correlationId: string, collection: string, ids: string[], timeToLive: number, 
+    addRetries(correlationId: string, group: string, ids: string[], timeToLive: number, 
         callback: (err: any, retry: RetryV1[]) => void);
 
-    getRetryById(correlationId: string, collection: string, id: string, 
+    getRetryById(correlationId: string, group: string, id: string, 
         callback: (err: any, retry: RetryV1) => void): void;
 
-    getRetryByIds(correlationId: string, collection: string, ids: string[], 
+    getRetryByIds(correlationId: string, group: string, ids: string[], 
         callback: (err: any, retry: RetryV1[]) => void): void;
 
-    deleteRetry(correlationId: string, collection: string, id: string, 
+    deleteRetry(correlationId: string, group: string, id: string, 
         callback: (err: any) => void): void;
 
     deleteExpiredRetries(correlationId: string, callback: (err: any) => void);
@@ -160,7 +160,7 @@ Now the client is ready to perform operations
 // Create a new retry
 var retry = {{
     id: '1',
-    collection: "c1",
+    group: "c1",
     attempt_count: 1,
     last_attempt_time: new Date(),
     expiration_time: new Date()        
@@ -181,7 +181,7 @@ client.getRetries(
     null,
     {
         id: '1',
-        collection: "c1",
+        group: "c1",
     },
     {
         total: true,

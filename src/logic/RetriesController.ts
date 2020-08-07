@@ -48,18 +48,18 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
         return this._counters.beginTiming(this.component + "." + methodName + ".exec_time");
     }
 
-    public getCollectionNames(correlationId: string, callback: (err: any, items: string[]) => void) {
-        let time = this.instrument(correlationId, "getCollectionNames");
-        this._persistence.getCollectionNames(correlationId, (err, items) => {
+    public getGroupNames(correlationId: string, callback: (err: any, items: string[]) => void) {
+        let time = this.instrument(correlationId, "getGroupNames");
+        this._persistence.getGroupNames(correlationId, (err, items) => {
             time.endTiming();
             if (err) {
-                this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "getCollectionNames");
+                this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "getGroupNames");
             }
             callback(err, items);
         });
     }
 
-    private createRetries(collection: string, ids: string[], timeToLive: number): RetryV1[] {
+    private createRetries(group: string, ids: string[], timeToLive: number): RetryV1[] {
         let now = new Date();
         let expirationTime = new Date(Date.now() + timeToLive);
         let result: RetryV1[] = [];
@@ -67,7 +67,7 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
         for (let _id of ids) {
             let retry: RetryV1 = {
                 id: _id,
-                collection: collection,
+                group: group,
                 last_attempt_time: now,
                 expiration_time: expirationTime,
                 attempt_count: 1
@@ -77,10 +77,10 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
         return result;
     }
 
-    public addRetries(correlationId: string, collection: string, ids: string[], timeToLive: number, callback: (err: any, retry: RetryV1[]) => void) {
+    public addRetries(correlationId: string, group: string, ids: string[], timeToLive: number, callback: (err: any, retry: RetryV1[]) => void) {
         let time = this.instrument(correlationId, "addRetries");
         let result: RetryV1[] = [];
-        if (collection == null || ids == null || ids.length == 0) {
+        if (group == null || ids == null || ids.length == 0) {
             return result;
         }
 
@@ -88,7 +88,7 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
 
         async.series([
             (callback) => {
-                retries = this.createRetries(collection, ids, timeToLive);
+                retries = this.createRetries(group, ids, timeToLive);
                 callback();
             },
             (callback) => {
@@ -96,7 +96,7 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
                 async.whilst(() => { return index >= 0 },
                     (cb) => {
                         let retry = retries[index--];
-                        this._persistence.getById(correlationId, retry.collection, retry.id, (err, item) => {
+                        this._persistence.getById(correlationId, retry.group, retry.id, (err, item) => {
                             if (err)
                                 this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "addRetries");
                             if (item != null) {
@@ -129,21 +129,21 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
         });
     }
 
-    public addRetry(correlationId: string, collection: string, id: string, timeToLive: number, callback: (err: any, retry: RetryV1) => void) {
+    public addRetry(correlationId: string, group: string, id: string, timeToLive: number, callback: (err: any, retry: RetryV1) => void) {
         let time = this.instrument(correlationId, "addRetries");
         let result: RetryV1 = null;
-        if (collection == null || id == null) {
+        if (group == null || id == null) {
             return result;
         }
         let retry: RetryV1;
 
         async.series([
             (callback) => {
-                retry = this.createRetries(collection, [id], timeToLive)[0];
+                retry = this.createRetries(group, [id], timeToLive)[0];
                 callback();
             },
             (callback) => {
-                this._persistence.getById(correlationId, retry.collection, retry.id, (err, item) => {
+                this._persistence.getById(correlationId, retry.group, retry.id, (err, item) => {
                     if (err) {
                         this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "addRetries");
                         callback(err);
@@ -184,25 +184,25 @@ export class RetriesController implements IConfigurable, IReferenceable, IComman
         });
     }
 
-    public getRetryById(correlationId: string, collection: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
+    public getRetryById(correlationId: string, group: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
         let time = this.instrument(correlationId, "getRetryById");
-        this._persistence.getById(correlationId, collection, id, (err, retry) => {
+        this._persistence.getById(correlationId, group, id, (err, retry) => {
             time.endTiming();
             callback(err, retry);
         });
     }
 
-    public getRetryByIds(correlationId: string, collection: string, ids: string[], callback: (err: any, retry: RetryV1[]) => void) {
+    public getRetryByIds(correlationId: string, group: string, ids: string[], callback: (err: any, retry: RetryV1[]) => void) {
         let time = this.instrument(correlationId, "getRetryByIds");
-        this._persistence.getByIds(correlationId, collection, ids, (err, retries) => {
+        this._persistence.getByIds(correlationId, group, ids, (err, retries) => {
             time.endTiming();
             callback(err, retries);
         });
     }
 
-    public deleteRetry(correlationId: string, collection: string, id: string, callback: (err: any) => void): void {
+    public deleteRetry(correlationId: string, group: string, id: string, callback: (err: any) => void): void {
         let time = this.instrument(correlationId, "deleteRetry");
-        this._persistence.delete(correlationId, collection, id, (err) => {
+        this._persistence.delete(correlationId, group, id, (err) => {
             time.endTiming();
             callback(err);
         });

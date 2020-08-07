@@ -17,10 +17,10 @@ export class RetriesMongoDbPersistence
         super.ensureIndex({ customer_id: 1 });
     }
 
-    public getCollectionNames(correlationId: string, callback: (err: any, items: string[]) => void): void {
+    public getGroupNames(correlationId: string, callback: (err: any, items: string[]) => void): void {
         this._collection.aggregate([
             {
-                "$group": { _id: "$collection", count: { $sum: 1 } }
+                "$group": { _id: "$group", count: { $sum: 1 } }
             }
         ]).toArray((err, results) => {
             if (err) {
@@ -33,54 +33,6 @@ export class RetriesMongoDbPersistence
             }
             callback(null, items);
         })
-    }
-
-    public getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
-        callback: (err: any, page: DataPage<RetryV1>) => void): void {
-        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
-    }
-
-    public getByIds(correlationId: string, collection: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: { $in: ids } });
-
-        super.getListByFilter(correlationId, { $and: filter }, null, null, (err, items) => {
-            if (err) {
-                callback(err, null);
-                return;
-            }
-            callback(null, items.length > 0 ? items : null);
-        })
-    }
-
-    public getById(correlationId: string, collection: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: id });
-
-        this._collection.findOne({ $and: filter }, (err, item) => {
-            if (item == null)
-                this._logger.trace(correlationId, "Nothing found from %s with id = %s", collection, id);
-            else
-                this._logger.trace(correlationId, "Retrieved from %s with id = %s", collection, id);
-
-            item = this.convertToPublic(item);
-            callback(err, item);
-        });
-    }
-
-    public delete(correlationId: string, collection: string, id: string, callback: (err: any) => void): void {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: id });
-        super.deleteByFilter(correlationId, { $and: filter }, callback);
-    }
-
-    public deleteExpired(correlationId: string, callback: (err: any) => void): void {
-        let now = new Date();
-        let filter = { expiration_time: { $lte: now } };
-        super.deleteByFilter(correlationId, filter, callback);
     }
 
     private composeFilter(filter: any) {
@@ -97,9 +49,9 @@ export class RetriesMongoDbPersistence
         if (_.isArray(ids))
             criteria.push({ _id: { $in: ids } });
 
-        let collection = filter.getAsNullableString('collection');
-        if (collection != null)
-            criteria.push({ collection: collection });
+        let group = filter.getAsNullableString('group');
+        if (group != null)
+            criteria.push({ group: group });
 
         let attemptCount = filter.getAsNullableString('attempt_count');
         if (attemptCount != null)
@@ -111,4 +63,53 @@ export class RetriesMongoDbPersistence
 
         return criteria.length > 0 ? { $and: criteria } : null;
     }
+        
+    public getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
+        callback: (err: any, page: DataPage<RetryV1>) => void): void {
+        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
+    }
+
+    public getByIds(correlationId: string, group: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: { $in: ids } });
+
+        super.getListByFilter(correlationId, { $and: filter }, null, null, (err, items) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+            callback(null, items.length > 0 ? items : null);
+        })
+    }
+
+    public getById(correlationId: string, group: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: id });
+
+        this._collection.findOne({ $and: filter }, (err, item) => {
+            if (item == null)
+                this._logger.trace(correlationId, "Nothing found from %s with id = %s", group, id);
+            else
+                this._logger.trace(correlationId, "Retrieved from %s with id = %s", group, id);
+
+            item = this.convertToPublic(item);
+            callback(err, item);
+        });
+    }
+
+    public delete(correlationId: string, group: string, id: string, callback: (err: any) => void): void {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: id });
+        super.deleteByFilter(correlationId, { $and: filter }, callback);
+    }
+
+    public deleteExpired(correlationId: string, callback: (err: any) => void): void {
+        let now = new Date();
+        let filter = { expiration_time: { $lte: now } };
+        super.deleteByFilter(correlationId, filter, callback);
+    }
+
 }

@@ -16,15 +16,15 @@ export class RetriesMemoryPersistence
         super();
     }
 
-    public getByIds(correlationId: string, collection: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void {
+    public getByIds(correlationId: string, group: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void {
         let filter = (item: RetryV1) => {
-            return _.indexOf(ids, item.id) >= 0 && item.collection == collection;
+            return _.indexOf(ids, item.id) >= 0 && item.group == group;
         }
         this.getListByFilter(correlationId, filter, null, null, callback);
     }
 
-    public getById(correlationId: string, collection: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
-        let items = this._items.filter(x => x.collection == collection && x.id == id);
+    public getById(correlationId: string, group: string, id: string, callback: (err: any, retry: RetryV1) => void): void {
+        let items = this._items.filter(x => x.group == group && x.id == id);
         let item = items.length > 0 ? items[0] : null;
         if (item)
             this._logger.trace(correlationId, "Found retry with id %s", id);
@@ -38,19 +38,19 @@ export class RetriesMemoryPersistence
         super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
     }
 
-    public getCollectionNames(correlationId: string, callback: (err: any, items: string[]) => void): void {
+    public getGroupNames(correlationId: string, callback: (err: any, items: string[]) => void): void {
         let result = new Array<string>();
         for (let retry of this._items) {
-            if (result.indexOf(retry.collection) < 0)
-                result.push(retry.collection);
+            if (result.indexOf(retry.group) < 0)
+                result.push(retry.group);
         }
         callback(null, result);
     }
 
-    public delete(correlationId: string, collection: string, id: string, callback: (err: any) => void): void {
+    public delete(correlationId: string, group: string, id: string, callback: (err: any) => void): void {
         for (let index = this._items.length - 1; index >= 0; index--) {
             let mapping = this._items[index];
-            if (mapping.collection == collection && mapping.id == id) {
+            if (mapping.group == group && mapping.id == id) {
                 this._items.splice(index, 1);
                 break;
             }
@@ -72,7 +72,7 @@ export class RetriesMemoryPersistence
         filter = filter || new FilterParams();
 
         let id = filter.getAsNullableString('id');
-        let collection = filter.getAsNullableString('collection');
+        let group = filter.getAsNullableString('group');
         let attempt_count = filter.getAsNullableString('attempt_count');
         let last_attempt_time = filter.getAsNullableBoolean('last_attempt_time');
         let ids = filter.getAsObject('ids');
@@ -88,7 +88,7 @@ export class RetriesMemoryPersistence
                 return false;
             if (ids && _.indexOf(ids, item.id) < 0)
                 return false;
-            if (collection && item.collection != collection)
+            if (group && item.group != group)
                 return false;
             if (attempt_count && item.customer_id != attempt_count)
                 return false;

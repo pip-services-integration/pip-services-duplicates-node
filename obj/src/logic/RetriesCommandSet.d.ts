@@ -3,7 +3,7 @@ import { IRetriesController } from './IRetriesController';
 export declare class RetriesCommandSet extends CommandSet {
     private _logic;
     constructor(logic: IRetriesController);
-    private makeGetCollectionNamesCommand;
+    private makeGetGroupNamesCommand;
     private makeGetRetriesCommand;
     private makeAddRetryCommand;
     private makeAddRetriesCommand;

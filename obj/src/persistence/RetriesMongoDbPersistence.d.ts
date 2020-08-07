@@ -6,11 +6,11 @@ import { RetryV1 } from '../data/version1';
 import { IRetriesPersistence } from './IRetriesPersistence';
 export declare class RetriesMongoDbPersistence extends IdentifiableMongoDbPersistence<RetryV1, string> implements IRetriesPersistence {
     constructor();
-    getCollectionNames(correlationId: string, callback: (err: any, items: string[]) => void): void;
-    getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams, callback: (err: any, page: DataPage<RetryV1>) => void): void;
-    getByIds(correlationId: string, collection: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void;
-    getById(correlationId: string, collection: string, id: string, callback: (err: any, retry: RetryV1) => void): void;
-    delete(correlationId: string, collection: string, id: string, callback: (err: any) => void): void;
-    deleteExpired(correlationId: string, callback: (err: any) => void): void;
+    getGroupNames(correlationId: string, callback: (err: any, items: string[]) => void): void;
     private composeFilter;
+    getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams, callback: (err: any, page: DataPage<RetryV1>) => void): void;
+    getByIds(correlationId: string, group: string, ids: string[], callback: (err: any, retries: RetryV1[]) => void): void;
+    getById(correlationId: string, group: string, id: string, callback: (err: any, retry: RetryV1) => void): void;
+    delete(correlationId: string, group: string, id: string, callback: (err: any) => void): void;
+    deleteExpired(correlationId: string, callback: (err: any) => void): void;
 }

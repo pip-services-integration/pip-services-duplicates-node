@@ -20,7 +20,7 @@ export class RetriesCommandSet extends CommandSet {
         this._logic = logic;
 
         // Register commands to the database
-		this.addCommand(this.makeGetCollectionNamesCommand());
+		this.addCommand(this.makeGetGroupNamesCommand());
 		this.addCommand(this.makeGetRetriesCommand());
 		this.addCommand(this.makeAddRetryCommand());
 		this.addCommand(this.makeAddRetriesCommand());
@@ -30,12 +30,12 @@ export class RetriesCommandSet extends CommandSet {
 		this.addCommand(this.makeDeleteExpiredRetryCommand());
     }
 
-	private makeGetCollectionNamesCommand(): ICommand {
+	private makeGetGroupNamesCommand(): ICommand {
 		return new Command(
-			"get_collection_names",
+			"get_group_names",
 			new ObjectSchema(true),
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				this._logic.getCollectionNames(correlationId, callback);
+				this._logic.getGroupNames(correlationId, callback);
 			});
 	}
 	
@@ -57,14 +57,14 @@ export class RetriesCommandSet extends CommandSet {
 		return new Command(
 			"add_retry",
 			new ObjectSchema(true)
-				.withRequiredProperty("collection", TypeCode.String)
+				.withRequiredProperty("group", TypeCode.String)
 				.withRequiredProperty("id", TypeCode.String)
 				.withOptionalProperty("ttl", TypeCode.Long),
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				var collection = args.getAsString("collection");
+				var group = args.getAsString("group");
 				var id = args.getAsString("id");
 				var ttl = args.getAsNullableLong("ttl");
-				this._logic.addRetry(correlationId, collection, id, ttl, callback);
+				this._logic.addRetry(correlationId, group, id, ttl, callback);
 			}
 		);
 	}
@@ -73,14 +73,14 @@ export class RetriesCommandSet extends CommandSet {
 		return new Command(
 			"add_retries",
 			new ObjectSchema(true)
-				.withRequiredProperty("collection", TypeCode.String)
+				.withRequiredProperty("group", TypeCode.String)
 				.withRequiredProperty("ids", TypeCode.Array)
 				.withOptionalProperty("ttl", TypeCode.Long),
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				var collection = args.getAsString("collection");
+				var group = args.getAsString("group");
 				var ids = StringConverter.toStringWithDefault(args.getAsObject("ids"), '').split(',');
 				var ttl = args.getAsNullableLong("ttl");
-				this._logic.addRetries(correlationId, collection, ids, ttl, callback);
+				this._logic.addRetries(correlationId, group, ids, ttl, callback);
 			}
 		);
 	}
@@ -89,12 +89,12 @@ export class RetriesCommandSet extends CommandSet {
 		return new Command(
 			"get_retry_by_id",
 			new ObjectSchema(true)
-				.withRequiredProperty("collection", TypeCode.String)
+				.withRequiredProperty("group", TypeCode.String)
 				.withRequiredProperty("id", TypeCode.String),
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				var collection = args.getAsString("collection");
+				var group = args.getAsString("group");
 				var id = args.getAsString("id");
-				this._logic.getRetryById(correlationId, collection, id, callback);
+				this._logic.getRetryById(correlationId, group, id, callback);
 			}
 		);
 	}
@@ -103,12 +103,12 @@ export class RetriesCommandSet extends CommandSet {
 		return new Command(
 			"get_retry_by_ids",
 			new ObjectSchema(true)
-				.withRequiredProperty("collection", TypeCode.String)
+				.withRequiredProperty("group", TypeCode.String)
 				.withRequiredProperty("ids", TypeCode.Array), // TODO: Check type
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				var collection = args.getAsString("collection");
+				var group = args.getAsString("group");
 				var ids = StringConverter.toStringWithDefault(args.getAsObject("ids"), '').split(',');
-				this._logic.getRetryByIds(correlationId, collection, ids, callback);
+				this._logic.getRetryByIds(correlationId, group, ids, callback);
 			}
 		);
 	}
@@ -117,12 +117,12 @@ export class RetriesCommandSet extends CommandSet {
 		return new Command(
 			"delete_retry",
 			new ObjectSchema(true)
-				.withRequiredProperty("collection", TypeCode.String)
+				.withRequiredProperty("group", TypeCode.String)
 				.withRequiredProperty("id", TypeCode.String),
 			(correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-				var collection = args.getAsString("collection");
+				var group = args.getAsString("group");
 				var id = args.getAsString("id");
-				this._logic.deleteRetry(correlationId, collection, id, (err) => {
+				this._logic.deleteRetry(correlationId, group, id, (err) => {
 					callback(err, null);
 				});
 			});

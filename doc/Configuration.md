@@ -57,7 +57,7 @@ MongoDB persistence has the following configuration properties:
 Example:
 ```yaml
 - descriptor: "pip-services-retries:persistence:file:default:1.0"
-  collection: "jobs"
+  group: "jobs"
   connection:
     uri: "mongodb://localhost/pipservicestest"
     host: "localhost"

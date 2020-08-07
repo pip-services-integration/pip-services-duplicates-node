@@ -71,7 +71,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry',
                     {
                         id: TestModel.DUPLICATE1.id,
-                        collection: TestModel.DUPLICATE1.collection,
+                        group: TestModel.DUPLICATE1.group,
                         ttl: 3
                     },
                     (err, req, res, retry) => {
@@ -79,7 +79,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE1.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE1.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE1.group);
                         assert.equal(retry.attempt_count, TestModel.DUPLICATE1.attempt_count);
 
                         retry1 = retry;
@@ -93,7 +93,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry', 
                     {
                         id: TestModel.DUPLICATE2.id,
-                        collection: TestModel.DUPLICATE2.collection,
+                        group: TestModel.DUPLICATE2.group,
                         ttl: 2
                     },
                     (err, req, res, retry) => {
@@ -101,7 +101,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE2.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE2.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE2.group);
                         assert.equal(retry.attempt_count, TestModel.DUPLICATE2.attempt_count);
 
                         retry2 = retry;
@@ -131,7 +131,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry',
                     {
                         id: TestModel.DUPLICATE2.id,
-                        collection: TestModel.DUPLICATE2.collection,
+                        group: TestModel.DUPLICATE2.group,
                         ttl: 3
                     },
                     (err, req, res, retry) => {
@@ -139,7 +139,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE2.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE2.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE2.group);
                         assert.equal(retry.attempt_count, 2);
 
                         retry1 = retry;
@@ -153,7 +153,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/delete_retry',
                     {
                         id: TestModel.DUPLICATE1.id,
-                        collection: TestModel.DUPLICATE1.collection,
+                        group: TestModel.DUPLICATE1.group,
                     },
                     (err, req, res, result) => {
                         assert.isNull(err);
@@ -167,7 +167,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/delete_retry',
                     {
                         id: TestModel.DUPLICATE2.id,
-                        collection: TestModel.DUPLICATE2.collection,
+                        group: TestModel.DUPLICATE2.group,
                     },
                     (err, req, res, result) => {
                         assert.isNull(err);
@@ -181,7 +181,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/get_retry_by_id',
                     {
                         id: TestModel.DUPLICATE1.id,
-                        collection: TestModel.DUPLICATE1.collection,
+                        group: TestModel.DUPLICATE1.group,
                     },
                     (err, req, res, result) => {
                         assert.isNull(err);
@@ -194,7 +194,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry',
                     {
                         id: TestModel.DUPLICATE1.id,
-                        collection: TestModel.DUPLICATE1.collection,
+                        group: TestModel.DUPLICATE1.group,
                         ttl: 3
                     },
                     (err, req, res, retry) => {
@@ -202,7 +202,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE1.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE1.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE1.group);
                         assert.equal(retry.attempt_count, TestModel.DUPLICATE1.attempt_count);
 
                         callback();
@@ -214,7 +214,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry',
                     {
                         id: TestModel.DUPLICATE2.id,
-                        collection: TestModel.DUPLICATE2.collection,
+                        group: TestModel.DUPLICATE2.group,
                         ttl: 2
                     },
                     (err, req, res, retry) => {
@@ -222,7 +222,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE2.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE2.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE2.group);
                         assert.equal(retry.attempt_count, TestModel.DUPLICATE2.attempt_count);
 
 
@@ -235,7 +235,7 @@ suite('RetriesHttpServiceV1', ()=> {
                 rest.post('/v1/retries/add_retry',
                     {
                         id: TestModel.DUPLICATE3.id,
-                        collection: TestModel.DUPLICATE3.collection,
+                        group: TestModel.DUPLICATE3.group,
                         ttl: 2
                     },
                     (err, req, res, retry) => {
@@ -243,7 +243,7 @@ suite('RetriesHttpServiceV1', ()=> {
 
                         assert.isObject(retry);
                         assert.equal(retry.id, TestModel.DUPLICATE3.id);
-                        assert.equal(retry.collection, TestModel.DUPLICATE3.collection);
+                        assert.equal(retry.group, TestModel.DUPLICATE3.group);
                         assert.equal(retry.attempt_count, TestModel.DUPLICATE3.attempt_count);
 
 
@@ -265,16 +265,16 @@ suite('RetriesHttpServiceV1', ()=> {
                     }
                 );
             },
-            // Get all collections
+            // Get all groups
             (callback) => {
-                rest.post('/v1/retries/get_collection_names',
+                rest.post('/v1/retries/get_group_names',
                     {},
-                    (err, req, res, collections) => {
+                    (err, req, res, groups) => {
                         assert.isNull(err);
-                        assert.isNotNull(collections);
-                        assert.equal(2, collections.length);
-                        assert.include(collections, "c1");
-                        assert.include(collections, "c2");
+                        assert.isNotNull(groups);
+                        assert.equal(2, groups.length);
+                        assert.include(groups, "c1");
+                        assert.include(groups, "c2");
                         callback();
                     })
             }

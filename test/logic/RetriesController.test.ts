@@ -25,22 +25,22 @@ suite('Retries Controller', () => {
         _persistence.close(null, done);
     });
 
-    test('Test Get Retry Collections', (done) => {
+    test('Test Get Retry Groups', (done) => {
         async.series([
             // Add retries
             (callback) => {
-                _controller.addRetry(null, "Common.Collection", "123", 3, callback);
+                _controller.addRetry(null, "Common.Group", "123", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.AnotherCollection", "123", 3, callback);
+                _controller.addRetry(null, "Common.AnotherGroup", "123", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.Collection", "ABC", 3, callback);
+                _controller.addRetry(null, "Common.Group", "ABC", 3, callback);
             }, (callback) => {
 
-                _controller.getCollectionNames(null, (err, items) => {
+                _controller.getGroupNames(null, (err, items) => {
                     assert.isNull(err);
                     assert.equal(2, items.length);
-                    assert.include(items, "Common.Collection");
-                    assert.include(items, "Common.AnotherCollection");
+                    assert.include(items, "Common.Group");
+                    assert.include(items, "Common.AnotherGroup");
                     callback();
                 });
 
@@ -52,15 +52,15 @@ suite('Retries Controller', () => {
 
         async.series([// Add retries
             (callback) => {
-                _controller.addRetry(null, "Common.Collection", "123", 3, callback);
+                _controller.addRetry(null, "Common.Group", "123", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.AnotherCollection", "123", 3, callback);
+                _controller.addRetry(null, "Common.AnotherGroup", "123", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.Collection", "ABC", 3, callback);
+                _controller.addRetry(null, "Common.Group", "ABC", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.Collection", "AAA", 3, callback);
+                _controller.addRetry(null, "Common.Group", "AAA", 3, callback);
             }, (callback) => {
-                _controller.getRetries(null, FilterParams.fromTuples("collection", "Common.Collection"), new PagingParams(1, 10, false), (err, retries) => {
+                _controller.getRetries(null, FilterParams.fromTuples("group", "Common.Group"), new PagingParams(1, 10, false), (err, retries) => {
                     assert.isNull(err);
                     assert.isNotNull(retries.data);
                     assert.equal(2, retries.data.length);
@@ -76,51 +76,51 @@ suite('Retries Controller', () => {
         async.series([
             // Add retries
             (callback) => {
-                _controller.addRetry(null, "Common.Collection", "123", 3, callback);;
+                _controller.addRetry(null, "Common.Group", "123", 3, callback);;
             }, (callback) => {
-                _controller.addRetry(null, "Common.AnotherCollection", "123", 3, callback);
+                _controller.addRetry(null, "Common.AnotherGroup", "123", 3, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.OtherCollection", "ABC", 3, callback);
+                _controller.addRetry(null, "Common.OtherGroup", "ABC", 3, callback);
             }, (callback) => {
                 // Try to read 1 retry
-                _controller.getRetryById(null, "Common.Collection", "123", (err, retry) => {
+                _controller.getRetryById(null, "Common.Group", "123", (err, retry) => {
                     assert.isNull(err);
                     assert.isNotNull(retry);
                     assert.equal(retry.id, "123");
-                    assert.equal(retry.collection, "Common.Collection");
+                    assert.equal(retry.group, "Common.Group");
                     callback();
                 });
 
             }, (callback) => {
                 // Try to read 2 retry
-                _controller.getRetryById(null, "Common.AnotherCollection", "123", (err, retry) => {
+                _controller.getRetryById(null, "Common.AnotherGroup", "123", (err, retry) => {
                     assert.isNull(err);
                     assert.isNotNull(retry);
                     assert.equal(retry.id, "123");
-                    assert.equal(retry.collection, "Common.AnotherCollection");
+                    assert.equal(retry.group, "Common.AnotherGroup");
                     callback();
                 });
 
             }, (callback) => {
                 // Try to read 3 retry
-                _controller.getRetryById(null, "Common.OtherCollection", "ABC", (err, retry) => {
+                _controller.getRetryById(null, "Common.OtherGroup", "ABC", (err, retry) => {
                     assert.isNull(err);
                     assert.isNotNull(retry);
                     assert.equal(retry.id, "ABC");
-                    assert.equal(retry.collection, "Common.OtherCollection");
+                    assert.equal(retry.group, "Common.OtherGroup");
                     callback();
                 });
 
             }, (callback) => {
-                // Test non-exiting collection
-                _controller.getRetryById(null, "Common.Collection1", "123", (err, retry) => {
+                // Test non-exiting group
+                _controller.getRetryById(null, "Common.Group1", "123", (err, retry) => {
                     assert.isNull(err);
                     assert.isNull(retry);
                     callback();
                 });
             }, (callback) => {
                 // Test non-exiting retry
-                _controller.getRetryById(null, "Common.Collection", "1234", (err, retry) => {
+                _controller.getRetryById(null, "Common.Group", "1234", (err, retry) => {
                     assert.isNull(err);
                     assert.isNull(retry);
                     callback();
@@ -135,9 +135,9 @@ suite('Retries Controller', () => {
         async.series([
             // Add retries
             (callback) => {
-                _controller.addRetry(null, "Common.Collection", "123", 0, callback);
+                _controller.addRetry(null, "Common.Group", "123", 0, callback);
             }, (callback) => {
-                _controller.addRetry(null, "Common.Collection", "ABC", 0, callback);
+                _controller.addRetry(null, "Common.Group", "ABC", 0, callback);
             }, (callback) => {
 
                 // Wait to expire
@@ -146,13 +146,13 @@ suite('Retries Controller', () => {
                 }, 500);
             }, (callback) => {
                 // Try to read expired retries
-                _controller.getRetryById(null, "Common.Collection", "123", (err, retry) => {
+                _controller.getRetryById(null, "Common.Group", "123", (err, retry) => {
                     assert.isNull(err);
                     assert.isNull(retry);
                     callback();
                 });
             }, (callback) => {
-                _controller.getRetryById(null, "Common.Collection", "ABC", (err, retry) => {
+                _controller.getRetryById(null, "Common.Group", "ABC", (err, retry) => {
                     assert.isNull(err);
                     assert.isNull(retry);
                     callback();

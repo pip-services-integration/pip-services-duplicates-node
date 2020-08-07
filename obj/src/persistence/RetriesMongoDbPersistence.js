@@ -8,10 +8,10 @@ class RetriesMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
         super('retries');
         super.ensureIndex({ customer_id: 1 });
     }
-    getCollectionNames(correlationId, callback) {
+    getGroupNames(correlationId, callback) {
         this._collection.aggregate([
             {
-                "$group": { _id: "$collection", count: { $sum: 1 } }
+                "$group": { _id: "$group", count: { $sum: 1 } }
             }
         ]).toArray((err, results) => {
             if (err) {
@@ -25,45 +25,6 @@ class RetriesMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
             callback(null, items);
         });
     }
-    getPageByFilter(correlationId, filter, paging, callback) {
-        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
-    }
-    getByIds(correlationId, collection, ids, callback) {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: { $in: ids } });
-        super.getListByFilter(correlationId, { $and: filter }, null, null, (err, items) => {
-            if (err) {
-                callback(err, null);
-                return;
-            }
-            callback(null, items.length > 0 ? items : null);
-        });
-    }
-    getById(correlationId, collection, id, callback) {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: id });
-        this._collection.findOne({ $and: filter }, (err, item) => {
-            if (item == null)
-                this._logger.trace(correlationId, "Nothing found from %s with id = %s", collection, id);
-            else
-                this._logger.trace(correlationId, "Retrieved from %s with id = %s", collection, id);
-            item = this.convertToPublic(item);
-            callback(err, item);
-        });
-    }
-    delete(correlationId, collection, id, callback) {
-        let filter = [];
-        filter.push({ collection: collection });
-        filter.push({ _id: id });
-        super.deleteByFilter(correlationId, { $and: filter }, callback);
-    }
-    deleteExpired(correlationId, callback) {
-        let now = new Date();
-        let filter = { expiration_time: { $lte: now } };
-        super.deleteByFilter(correlationId, filter, callback);
-    }
     composeFilter(filter) {
         filter = filter || new pip_services3_commons_node_1.FilterParams();
         let criteria = [];
@@ -76,9 +37,9 @@ class RetriesMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
             ids = ids.split(',');
         if (_.isArray(ids))
             criteria.push({ _id: { $in: ids } });
-        let collection = filter.getAsNullableString('collection');
-        if (collection != null)
-            criteria.push({ collection: collection });
+        let group = filter.getAsNullableString('group');
+        if (group != null)
+            criteria.push({ group: group });
         let attemptCount = filter.getAsNullableString('attempt_count');
         if (attemptCount != null)
             criteria.push({ attempt_count: attemptCount });
@@ -86,6 +47,45 @@ class RetriesMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
         if (lastAttemptTime != null)
             criteria.push({ last_attempt_time: lastAttemptTime });
         return criteria.length > 0 ? { $and: criteria } : null;
+    }
+    getPageByFilter(correlationId, filter, paging, callback) {
+        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
+    }
+    getByIds(correlationId, group, ids, callback) {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: { $in: ids } });
+        super.getListByFilter(correlationId, { $and: filter }, null, null, (err, items) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+            callback(null, items.length > 0 ? items : null);
+        });
+    }
+    getById(correlationId, group, id, callback) {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: id });
+        this._collection.findOne({ $and: filter }, (err, item) => {
+            if (item == null)
+                this._logger.trace(correlationId, "Nothing found from %s with id = %s", group, id);
+            else
+                this._logger.trace(correlationId, "Retrieved from %s with id = %s", group, id);
+            item = this.convertToPublic(item);
+            callback(err, item);
+        });
+    }
+    delete(correlationId, group, id, callback) {
+        let filter = [];
+        filter.push({ group: group });
+        filter.push({ _id: id });
+        super.deleteByFilter(correlationId, { $and: filter }, callback);
+    }
+    deleteExpired(correlationId, callback) {
+        let now = new Date();
+        let filter = { expiration_time: { $lte: now } };
+        super.deleteByFilter(correlationId, filter, callback);
     }
 }
 exports.RetriesMongoDbPersistence = RetriesMongoDbPersistence;

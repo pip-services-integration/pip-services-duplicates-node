@@ -13,7 +13,7 @@ class RetriesCommandSet extends pip_services3_commons_node_1.CommandSet {
         super();
         this._logic = logic;
         // Register commands to the database
-        this.addCommand(this.makeGetCollectionNamesCommand());
+        this.addCommand(this.makeGetGroupNamesCommand());
         this.addCommand(this.makeGetRetriesCommand());
         this.addCommand(this.makeAddRetryCommand());
         this.addCommand(this.makeAddRetriesCommand());
@@ -22,9 +22,9 @@ class RetriesCommandSet extends pip_services3_commons_node_1.CommandSet {
         this.addCommand(this.makeDeleteRetryCommand());
         this.addCommand(this.makeDeleteExpiredRetryCommand());
     }
-    makeGetCollectionNamesCommand() {
-        return new pip_services3_commons_node_2.Command("get_collection_names", new pip_services3_commons_node_5.ObjectSchema(true), (correlationId, args, callback) => {
-            this._logic.getCollectionNames(correlationId, callback);
+    makeGetGroupNamesCommand() {
+        return new pip_services3_commons_node_2.Command("get_group_names", new pip_services3_commons_node_5.ObjectSchema(true), (correlationId, args, callback) => {
+            this._logic.getGroupNames(correlationId, callback);
         });
     }
     makeGetRetriesCommand() {
@@ -38,52 +38,52 @@ class RetriesCommandSet extends pip_services3_commons_node_1.CommandSet {
     }
     makeAddRetryCommand() {
         return new pip_services3_commons_node_2.Command("add_retry", new pip_services3_commons_node_5.ObjectSchema(true)
-            .withRequiredProperty("collection", pip_services3_commons_node_6.TypeCode.String)
+            .withRequiredProperty("group", pip_services3_commons_node_6.TypeCode.String)
             .withRequiredProperty("id", pip_services3_commons_node_6.TypeCode.String)
             .withOptionalProperty("ttl", pip_services3_commons_node_6.TypeCode.Long), (correlationId, args, callback) => {
-            var collection = args.getAsString("collection");
+            var group = args.getAsString("group");
             var id = args.getAsString("id");
             var ttl = args.getAsNullableLong("ttl");
-            this._logic.addRetry(correlationId, collection, id, ttl, callback);
+            this._logic.addRetry(correlationId, group, id, ttl, callback);
         });
     }
     makeAddRetriesCommand() {
         return new pip_services3_commons_node_2.Command("add_retries", new pip_services3_commons_node_5.ObjectSchema(true)
-            .withRequiredProperty("collection", pip_services3_commons_node_6.TypeCode.String)
+            .withRequiredProperty("group", pip_services3_commons_node_6.TypeCode.String)
             .withRequiredProperty("ids", pip_services3_commons_node_6.TypeCode.Array)
             .withOptionalProperty("ttl", pip_services3_commons_node_6.TypeCode.Long), (correlationId, args, callback) => {
-            var collection = args.getAsString("collection");
+            var group = args.getAsString("group");
             var ids = pip_services3_commons_node_1.StringConverter.toStringWithDefault(args.getAsObject("ids"), '').split(',');
             var ttl = args.getAsNullableLong("ttl");
-            this._logic.addRetries(correlationId, collection, ids, ttl, callback);
+            this._logic.addRetries(correlationId, group, ids, ttl, callback);
         });
     }
     makeGetRetryByIdCommand() {
         return new pip_services3_commons_node_2.Command("get_retry_by_id", new pip_services3_commons_node_5.ObjectSchema(true)
-            .withRequiredProperty("collection", pip_services3_commons_node_6.TypeCode.String)
+            .withRequiredProperty("group", pip_services3_commons_node_6.TypeCode.String)
             .withRequiredProperty("id", pip_services3_commons_node_6.TypeCode.String), (correlationId, args, callback) => {
-            var collection = args.getAsString("collection");
+            var group = args.getAsString("group");
             var id = args.getAsString("id");
-            this._logic.getRetryById(correlationId, collection, id, callback);
+            this._logic.getRetryById(correlationId, group, id, callback);
         });
     }
     makeGetRetryByIdsCommand() {
         return new pip_services3_commons_node_2.Command("get_retry_by_ids", new pip_services3_commons_node_5.ObjectSchema(true)
-            .withRequiredProperty("collection", pip_services3_commons_node_6.TypeCode.String)
+            .withRequiredProperty("group", pip_services3_commons_node_6.TypeCode.String)
             .withRequiredProperty("ids", pip_services3_commons_node_6.TypeCode.Array), // TODO: Check type
         (correlationId, args, callback) => {
-            var collection = args.getAsString("collection");
+            var group = args.getAsString("group");
             var ids = pip_services3_commons_node_1.StringConverter.toStringWithDefault(args.getAsObject("ids"), '').split(',');
-            this._logic.getRetryByIds(correlationId, collection, ids, callback);
+            this._logic.getRetryByIds(correlationId, group, ids, callback);
         });
     }
     makeDeleteRetryCommand() {
         return new pip_services3_commons_node_2.Command("delete_retry", new pip_services3_commons_node_5.ObjectSchema(true)
-            .withRequiredProperty("collection", pip_services3_commons_node_6.TypeCode.String)
+            .withRequiredProperty("group", pip_services3_commons_node_6.TypeCode.String)
             .withRequiredProperty("id", pip_services3_commons_node_6.TypeCode.String), (correlationId, args, callback) => {
-            var collection = args.getAsString("collection");
+            var group = args.getAsString("group");
             var id = args.getAsString("id");
-            this._logic.deleteRetry(correlationId, collection, id, (err) => {
+            this._logic.deleteRetry(correlationId, group, id, (err) => {
                 callback(err, null);
             });
         });

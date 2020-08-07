@@ -7,14 +7,14 @@ class RetriesMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
     constructor() {
         super();
     }
-    getByIds(correlationId, collection, ids, callback) {
+    getByIds(correlationId, group, ids, callback) {
         let filter = (item) => {
-            return _.indexOf(ids, item.id) >= 0 && item.collection == collection;
+            return _.indexOf(ids, item.id) >= 0 && item.group == group;
         };
         this.getListByFilter(correlationId, filter, null, null, callback);
     }
-    getById(correlationId, collection, id, callback) {
-        let items = this._items.filter(x => x.collection == collection && x.id == id);
+    getById(correlationId, group, id, callback) {
+        let items = this._items.filter(x => x.group == group && x.id == id);
         let item = items.length > 0 ? items[0] : null;
         if (item)
             this._logger.trace(correlationId, "Found retry with id %s", id);
@@ -25,18 +25,18 @@ class RetriesMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
     getPageByFilter(correlationId, filter, paging, callback) {
         super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
     }
-    getCollectionNames(correlationId, callback) {
+    getGroupNames(correlationId, callback) {
         let result = new Array();
         for (let retry of this._items) {
-            if (result.indexOf(retry.collection) < 0)
-                result.push(retry.collection);
+            if (result.indexOf(retry.group) < 0)
+                result.push(retry.group);
         }
         callback(null, result);
     }
-    delete(correlationId, collection, id, callback) {
+    delete(correlationId, group, id, callback) {
         for (let index = this._items.length - 1; index >= 0; index--) {
             let mapping = this._items[index];
-            if (mapping.collection == collection && mapping.id == id) {
+            if (mapping.group == group && mapping.id == id) {
                 this._items.splice(index, 1);
                 break;
             }
@@ -55,7 +55,7 @@ class RetriesMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
     composeFilter(filter) {
         filter = filter || new pip_services3_commons_node_1.FilterParams();
         let id = filter.getAsNullableString('id');
-        let collection = filter.getAsNullableString('collection');
+        let group = filter.getAsNullableString('group');
         let attempt_count = filter.getAsNullableString('attempt_count');
         let last_attempt_time = filter.getAsNullableBoolean('last_attempt_time');
         let ids = filter.getAsObject('ids');
@@ -69,7 +69,7 @@ class RetriesMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
                 return false;
             if (ids && _.indexOf(ids, item.id) < 0)
                 return false;
-            if (collection && item.collection != collection)
+            if (group && item.group != group)
                 return false;
             if (attempt_count && item.customer_id != attempt_count)
                 return false;

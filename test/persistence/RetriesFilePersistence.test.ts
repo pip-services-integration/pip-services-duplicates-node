@@ -19,8 +19,8 @@ suite('RetriesFilePersistence', () => {
         persistence.close(null, done);
     });
 
-    test('Retry collections', (done) => {
-        fixture.testGetRetryCollections(done);
+    test('Retry groups', (done) => {
+        fixture.testGetRetryGroups(done);
     });
 
     test('Get Retries', (done) => {

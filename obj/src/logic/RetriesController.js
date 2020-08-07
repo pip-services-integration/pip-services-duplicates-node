@@ -26,24 +26,24 @@ class RetriesController {
         this._logger.trace(correlationId, "Executed %s.%s %s", this.component, methodName);
         return this._counters.beginTiming(this.component + "." + methodName + ".exec_time");
     }
-    getCollectionNames(correlationId, callback) {
-        let time = this.instrument(correlationId, "getCollectionNames");
-        this._persistence.getCollectionNames(correlationId, (err, items) => {
+    getGroupNames(correlationId, callback) {
+        let time = this.instrument(correlationId, "getGroupNames");
+        this._persistence.getGroupNames(correlationId, (err, items) => {
             time.endTiming();
             if (err) {
-                this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "getCollectionNames");
+                this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "getGroupNames");
             }
             callback(err, items);
         });
     }
-    createRetries(collection, ids, timeToLive) {
+    createRetries(group, ids, timeToLive) {
         let now = new Date();
         let expirationTime = new Date(Date.now() + timeToLive);
         let result = [];
         for (let _id of ids) {
             let retry = {
                 id: _id,
-                collection: collection,
+                group: group,
                 last_attempt_time: now,
                 expiration_time: expirationTime,
                 attempt_count: 1
@@ -52,23 +52,23 @@ class RetriesController {
         }
         return result;
     }
-    addRetries(correlationId, collection, ids, timeToLive, callback) {
+    addRetries(correlationId, group, ids, timeToLive, callback) {
         let time = this.instrument(correlationId, "addRetries");
         let result = [];
-        if (collection == null || ids == null || ids.length == 0) {
+        if (group == null || ids == null || ids.length == 0) {
             return result;
         }
         let retries;
         async.series([
             (callback) => {
-                retries = this.createRetries(collection, ids, timeToLive);
+                retries = this.createRetries(group, ids, timeToLive);
                 callback();
             },
             (callback) => {
                 let index = retries.length - 1;
                 async.whilst(() => { return index >= 0; }, (cb) => {
                     let retry = retries[index--];
-                    this._persistence.getById(correlationId, retry.collection, retry.id, (err, item) => {
+                    this._persistence.getById(correlationId, retry.group, retry.id, (err, item) => {
                         if (err)
                             this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "addRetries");
                         if (item != null) {
@@ -101,20 +101,20 @@ class RetriesController {
             callback(err, result);
         });
     }
-    addRetry(correlationId, collection, id, timeToLive, callback) {
+    addRetry(correlationId, group, id, timeToLive, callback) {
         let time = this.instrument(correlationId, "addRetries");
         let result = null;
-        if (collection == null || id == null) {
+        if (group == null || id == null) {
             return result;
         }
         let retry;
         async.series([
             (callback) => {
-                retry = this.createRetries(collection, [id], timeToLive)[0];
+                retry = this.createRetries(group, [id], timeToLive)[0];
                 callback();
             },
             (callback) => {
-                this._persistence.getById(correlationId, retry.collection, retry.id, (err, item) => {
+                this._persistence.getById(correlationId, retry.group, retry.id, (err, item) => {
                     if (err) {
                         this._logger.error(correlationId, err, "Failed to execute %s.%s", this.component, "addRetries");
                         callback(err);
@@ -153,23 +153,23 @@ class RetriesController {
             callback(err, result);
         });
     }
-    getRetryById(correlationId, collection, id, callback) {
+    getRetryById(correlationId, group, id, callback) {
         let time = this.instrument(correlationId, "getRetryById");
-        this._persistence.getById(correlationId, collection, id, (err, retry) => {
+        this._persistence.getById(correlationId, group, id, (err, retry) => {
             time.endTiming();
             callback(err, retry);
         });
     }
-    getRetryByIds(correlationId, collection, ids, callback) {
+    getRetryByIds(correlationId, group, ids, callback) {
         let time = this.instrument(correlationId, "getRetryByIds");
-        this._persistence.getByIds(correlationId, collection, ids, (err, retries) => {
+        this._persistence.getByIds(correlationId, group, ids, (err, retries) => {
             time.endTiming();
             callback(err, retries);
         });
     }
-    deleteRetry(correlationId, collection, id, callback) {
+    deleteRetry(correlationId, group, id, callback) {
         let time = this.instrument(correlationId, "deleteRetry");
-        this._persistence.delete(correlationId, collection, id, (err) => {
+        this._persistence.delete(correlationId, group, id, (err) => {
             time.endTiming();
             callback(err);
         });
